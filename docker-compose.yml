@@ -3,12 +3,12 @@ version: '3.8'
 services:
   driver:
     build: .
-    container_name: sflitzer
+    container_name: Driver12
     environment:
-      USER_EMAIL: info@sflitzer.de
-      USER_PASSWORD: Sflitzer.
-      UNTERNEHMEN: sflitzer
-      WEBHOOK_ADRESSE: https://bemany-n8n-c1b46415d102.herokuapp.com/webhook/fahrerapp/uber/dispatcher_2
+      USER_EMAIL: er@driverandservices.de
+      USER_PASSWORD: Hakan2020
+      UNTERNEHMEN: driver
+      WEBHOOK_ADRESSE: https://webhook.site/7c3f1b21-041b-4e78-9a27-4adb93b2ec8e
     volumes:
       - ./scripts:/app/scripts
       - ./cookies/:/app/cookies

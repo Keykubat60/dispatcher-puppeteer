@@ -38,7 +38,7 @@ async function sendDataViaWebhook(orderData, loggedIn = true) {
             console.log("gesendet")
             return response.data;
         } catch (error) {
-            console.error('Webhook Fehler:');
+            console.error('Webhook Fehler: ', error);
             return null;
         }
     }
