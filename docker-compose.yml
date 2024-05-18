@@ -8,7 +8,7 @@ services:
       USER_EMAIL: er@driverandservices.de
       USER_PASSWORD: Hakan2020
       UNTERNEHMEN: driver
-      WEBHOOK_ADRESSE: https://webhook.site/7c3f1b21-041b-4e78-9a27-4adb93b2ec8e
+      WEBHOOK_ADRESSE: https://bemany-n8n-c1b46415d102.herokuapp.com/webhook/fahrerapp/uber/dispatcher_2
     volumes:
       - ./scripts:/app/scripts
       - ./cookies/:/app/cookies
