@@ -33,9 +33,7 @@ async function humanType(page, selector, text) {
 async function sendDataViaWebhook(orderData, loggedIn = true) {
     if(loggedIn){
         try {
-            console.log("vor gesendet")
             const response = await axios.post(WEBHOOK_ADRESSE, orderData);
-            console.log("gesendet")
             return response.data;
         } catch (error) {
             console.error('Webhook Fehler: ', error);
@@ -292,7 +290,6 @@ async function main() {
             if (!processedOrders.has(orderId)) {
                 console.log("New trip(s) arrived");
 
-              console.log("Processing new order:", orderId);
               processedOrders.add(orderId);
               Counter++
               processOrder(page, order);
