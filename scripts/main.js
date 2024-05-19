@@ -105,18 +105,23 @@ async function getDistance(origin, destination) {
 
 async function sendLiveCheck(page) {
     while (true) {
-        await new Promise(resolve => setTimeout(resolve, 300000)); // 10 Minuten warten
-        await page.goto('https://vsdispatch.uber.com/', { waitUntil: 'networkidle2' });
-        await new Promise(resolve => setTimeout(resolve, 10000)); // 10 Minuten warten
+        try{
+            await new Promise(resolve => setTimeout(resolve, 300000)); // 10 Minuten warten
+            await page.goto('https://vsdispatch.uber.com/', { waitUntil: 'networkidle2' });
+            await new Promise(resolve => setTimeout(resolve, 10000)); // 10 Minuten warten
+    
+            const aliveData = {
+                unternehmen: UNTERNEHMEN,
+                status: Status,
+                auftraege: Counter,
+            };
+            Counter = 0
+            await sendDataViaWebhook(aliveData);
+            console.log(`Live-Check für '${UNTERNEHMEN}' gesendet.`);
+        }catch(e){
+            console.log("Fehler mit sendLiveCheck: ", e)
+        }
 
-        const aliveData = {
-            unternehmen: UNTERNEHMEN,
-            status: Status,
-            auftraege: Counter,
-        };
-        Counter = 0
-        await sendDataViaWebhook(aliveData);
-        console.log(`Live-Check für '${UNTERNEHMEN}' gesendet.`);
     }
 }
 
@@ -290,9 +295,10 @@ async function main() {
             if (!processedOrders.has(orderId)) {
                 console.log("New trip(s) arrived");
 
+              console.log("Processing new order:", orderId);
               processedOrders.add(orderId);
               Counter++
-              processOrder(page, order);
+              processOrder(order);
             }
           }
     
