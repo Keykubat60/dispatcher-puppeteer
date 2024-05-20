@@ -166,15 +166,15 @@ async function processOrder(orderElement) {
         const orderData = await orderElement.evaluate(el => {
             const getTextContent = (element, selector) => element.querySelector(selector)?.innerText || '';
             return {
-                price: getTextContent(el, 'td._css-fHeobO'),
-                pickupAddress: getTextContent(el, 'td:nth-of-type(3)'),
-                destinationAddress: getTextContent(el, 'td:nth-of-type(4)'),
-                driverName: getTextContent(el, 'td:nth-of-type(5)'),
-                consumer: getTextContent(el, 'td:nth-of-type(6)')
+                preis: getTextContent(el, 'td._css-fHeobO'),
+                abholadresse: getTextContent(el, 'td:nth-of-type(3)'),
+                zieladresse: getTextContent(el, 'td:nth-of-type(4)'),
+                fahrer: getTextContent(el, 'td:nth-of-type(5)'),
+                gast: getTextContent(el, 'td:nth-of-type(6)')
             };
         });
 
-        const distance = await getDistanceWithTimeout(orderData.pickupAddress, orderData.destinationAddress);
+        const distance = await getDistanceWithTimeout(orderData.abholadresse, orderData.zieladresse);
         if (distance === null) {
             distance = 0
             console.log('Entfernung hat zu lange gedauert, setze Entfernung auf null.');
