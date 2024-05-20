@@ -4,7 +4,6 @@ const axios = require('axios');
 const NodeGeocoder = require('node-geocoder');
 const fs = require('fs');
 const path = require('path');
-const { Console } = require('console');
 require('dotenv').config();
 
 puppeteer.use(StealthPlugin());
@@ -22,6 +21,9 @@ var max_login_attempts = 3
 const geocoder = NodeGeocoder({
     provider: 'openstreetmap'
 });
+
+// Globales Flag, um zu überprüfen, ob der Live-Check läuft
+var liveCheckRunning = false;
 
 async function humanType(page, selector, text) {
     for (let char of text) {
@@ -103,38 +105,55 @@ async function getDistance(origin, destination) {
     }
 }
 
+async function waitForNoOrders(page) {
+    let currentOrders;
+    do {
+        currentOrders = await page.$$('tr.MuiTableRow-root');
+        if (currentOrders.length < 2) break; // Keine neuen Aufträge, kann fortfahren
+        console.log('Warten auf die Bearbeitung der Aufträge...');
+        await new Promise(resolve => setTimeout(resolve, 1000)); // 1 Sekunden warten und erneut prüfen
+    } while (currentOrders.length >= 2);
+}
+
 async function sendLiveCheck(page) {
-    while (true) {
-        try{
-            await new Promise(resolve => setTimeout(resolve, 300000)); // 10 Minuten warten
+    if (liveCheckRunning) return; // Wenn der Live-Check bereits läuft, nichts tun
+
+    liveCheckRunning = true; // Setze das Flag, dass der Live-Check läuft
+    try {
+        while (true) {
+            await new Promise(resolve => setTimeout(resolve, 297000)); // 5 Minuten warten
+            await waitForNoOrders(page); // Warten, bis keine neuen Aufträge mehr vorhanden sind
+
             await page.goto('https://vsdispatch.uber.com/', { waitUntil: 'networkidle2' });
-            await new Promise(resolve => setTimeout(resolve, 10000)); // 10 Minuten warten
-    
+            await new Promise(resolve => setTimeout(resolve, 3000)); // 10 Sekunden warten
+
             const aliveData = {
                 unternehmen: UNTERNEHMEN,
                 status: Status,
                 auftraege: Counter,
             };
-            Counter = 0
+            Counter = 0;
             await sendDataViaWebhook(aliveData);
             console.log(`Live-Check für '${UNTERNEHMEN}' gesendet.`);
-        }catch(e){
-            console.log("Fehler mit sendLiveCheck: ", e)
         }
-
+    } catch (e) {
+        console.log("Fehler mit sendLiveCheck: ", e);
+    } finally {
+        liveCheckRunning = false; // Setze das Flag zurück, wenn die Schleife beendet wird
     }
 }
 
+
 async function processOrder(orderElement) {
     try {
-        const orderData = await orderElement.evaluate(() => {
-            const getTextContent = (selector) => document.querySelector(selector)?.innerText || '';
+        const orderData = await orderElement.evaluate(el => {
+            const getTextContent = (element, selector) => element.querySelector(selector)?.innerText || '';
             return {
-                price: getTextContent('td._css-fHeobO'),
-                pickupAddress: getTextContent('td:nth-of-type(3)'),
-                destinationAddress: getTextContent('td:nth-of-type(4)'),
-                driverName: getTextContent('td:nth-of-type(5)'),
-                consumer: getTextContent('td:nth-of-type(6)')
+                price: getTextContent(el, 'td._css-fHeobO'),
+                pickupAddress: getTextContent(el, 'td:nth-of-type(3)'),
+                destinationAddress: getTextContent(el, 'td:nth-of-type(4)'),
+                driverName: getTextContent(el, 'td:nth-of-type(5)'),
+                consumer: getTextContent(el, 'td:nth-of-type(6)')
             };
         });
 
