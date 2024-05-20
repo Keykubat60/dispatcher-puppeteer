@@ -174,7 +174,7 @@ async function processOrder(orderElement) {
             };
         });
 
-        const distance = await getDistanceWithTimeout(orderData.abholadresse, orderData.zieladresse);
+        let distance = await getDistanceWithTimeout(orderData.abholadresse, orderData.zieladresse);
         if (distance === null) {
             distance = 0
             console.log('Entfernung hat zu lange gedauert, setze Entfernung auf null.');
