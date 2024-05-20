@@ -78,6 +78,22 @@ async function acceptTrip(orderElement) {
 
 
 
+async function getDistanceWithTimeout(origin, destination, timeout = 500) {
+    try{
+        const distancePromise = getDistance(origin, destination);
+        const timeoutPromise = new Promise((resolve) => {
+            setTimeout(() => resolve(null), timeout);
+        });
+        return Promise.race([distancePromise, timeoutPromise]);
+    }
+    catch(e)
+    {
+        console.log("Fehler bei getDistanceTimeout: ", e)
+        return 0
+    }
+    
+}
+
 async function getDistance(origin, destination) {
     try {
         const [location1, location2] = await Promise.all([
@@ -104,6 +120,7 @@ async function getDistance(origin, destination) {
         return 0;
     }
 }
+
 
 async function waitForNoOrders(page) {
     let currentOrders;
@@ -157,7 +174,12 @@ async function processOrder(orderElement) {
             };
         });
 
-        //const distance = await getDistance(orderData.pickupAddress, orderData.destinationAddress);
+        const distance = await getDistanceWithTimeout(orderData.pickupAddress, orderData.destinationAddress);
+        if (distance === null) {
+            distance = 0
+            console.log('Entfernung hat zu lange gedauert, setze Entfernung auf null.');
+        }
+        orderData.distance = distance;
 
         //orderData.entfernung = distance.toFixed(2);
         orderData.unternehmen = UNTERNEHMEN;
